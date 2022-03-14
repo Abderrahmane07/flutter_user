@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class RegisterView extends StatefulWidget {
-  const RegisterView({Key? key}) : super(key: key);
+class LoginView extends StatefulWidget {
+  const LoginView({Key? key}) : super(key: key);
 
   @override
-  State<RegisterView> createState() => _RegisterViewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _RegisterViewState extends State<RegisterView> {
+class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -32,7 +32,7 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Register")),
+      appBar: AppBar(title: const Text("Log in")),
       body: Column(
         children: [
           TextField(
@@ -59,25 +59,28 @@ class _RegisterViewState extends State<RegisterView> {
               final password = _password.text;
               try {
                 final userCredential = await FirebaseAuth.instance
-                    .createUserWithEmailAndPassword(
+                    .signInWithEmailAndPassword(
                         email: email, password: password);
                 print(userCredential);
               } on FirebaseAuthException catch (e) {
-                if (e.code == 'weak-password') {
-                  print('mdp da3if, 9awwih');
-                } else if (e.code == 'email-already-in-use') {
-                  print('hada ghir bedlo ddawah');
+                if (e.code == 'user-not-found') {
+                  print("A jma3 rassek");
+                } else if (e.code == 'wrong-password') {
+                  print('ghalat had mdp');
+                } else {
+                  print('chi 7aja ya5ra hadi a primo');
+                  print(e.code);
                 }
               }
             },
-            child: const Text('Abdellah'),
+            child: const Text('Log in l Trissiane'),
           ),
           TextButton(
               onPressed: () {
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/login/', (route) => false);
+                    .pushNamedAndRemoveUntil('/register/', (route) => false);
               },
-              child: const Text("Already registred? Log in here")),
+              child: const Text("Not registred yet? Create an account here")),
         ],
       ),
     );
