@@ -64,14 +64,24 @@ class _LoginViewState extends State<LoginView> {
                 await FirebaseAuth.instance //final userCredential =
                     .signInWithEmailAndPassword(
                         email: email, password: password);
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                final user = FirebaseAuth.instance.currentUser;
+                if (user?.emailVerified ?? false) {
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                } else {
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil(verifyRoute, (route) => false);
+                }
+
                 // devtools.log(userCredential.toString());
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'user-not-found') {
                   await showErrorDialog(context, "User not found");
                 } else if (e.code == 'wrong-password') {
                   await showErrorDialog(context, "Wrong credentials");
+                } else if (e.code == 'network-request-failed') {
+                  await showErrorDialog(
+                      context, "Check your internet connection please");
                 } else {
                   await showErrorDialog(context, 'chi 7aja ya5ra hadi a primo');
                   devtools.log(e.code);
