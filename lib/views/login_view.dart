@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as devtools show log;
-
 import 'package:flutter_application_1/constants/routes.dart';
+import 'package:flutter_application_1/services/auth/auth_exceptions.dart';
+import 'package:flutter_application_1/services/auth/auth_service.dart';
 
 import '../utilities/show_dialog_error.dart';
 
@@ -61,11 +60,10 @@ class _LoginViewState extends State<LoginView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await FirebaseAuth.instance //final userCredential =
-                    .signInWithEmailAndPassword(
-                        email: email, password: password);
-                final user = FirebaseAuth.instance.currentUser;
-                if (user?.emailVerified ?? false) {
+                await AuthService.firebase()
+                    .logIn(email: email, password: password);
+                final user = AuthService.firebase().currentUser;
+                if (user?.isEmailVerified ?? false) {
                   Navigator.of(context)
                       .pushNamedAndRemoveUntil(notesRoute, (route) => false);
                 } else {
@@ -74,21 +72,15 @@ class _LoginViewState extends State<LoginView> {
                 }
 
                 // devtools.log(userCredential.toString());
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found') {
-                  await showErrorDialog(context, "User not found");
-                } else if (e.code == 'wrong-password') {
-                  await showErrorDialog(context, "Wrong credentials");
-                } else if (e.code == 'network-request-failed') {
-                  await showErrorDialog(
-                      context, "Check your internet connection please");
-                } else {
-                  await showErrorDialog(context, 'chi 7aja ya5ra hadi a primo');
-                  devtools.log(e.code);
-                }
-              } catch (e) {
-                // To take care of even other potemtial sources of error other than firebase
-                await showErrorDialog(context, e.toString());
+              } on UserNotFoundAuthException {
+                await showErrorDialog(context, "User not found");
+              } on WrongPasswordAuthException {
+                await showErrorDialog(context, "Wrong credentials");
+              } on NetworkRequestFailedAuthException {
+                await showErrorDialog(
+                    context, "Check your internet connection please");
+              } on GenericAuthException {
+                await showErrorDialog(context, "Authentication error");
               }
             },
             child: const Text('Log in l Trissiane'),
